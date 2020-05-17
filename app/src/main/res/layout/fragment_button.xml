@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tv_button"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:background="@color/colorAccent"
+    android:elevation="2dp"
+    android:fontFamily="sans-serif-thin"
+    android:gravity="center"
+    android:padding="8dp"
+    android:textColor="@color/colorText"
+    android:textSize="18sp"
+    tools:text="@string/next" />

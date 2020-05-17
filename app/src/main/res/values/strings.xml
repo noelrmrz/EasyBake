@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">EasyBake</string>
+    <string name="servings">Servings:  </string>
+    <string name="ingredients">Ingredients:  </string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="recipeStepsTag">Recipe Steps</string>
+    <string name="fragmentInstructionsTag">Instruction Fragment</string>
+    <string name="fragmentNextButtonTag">Next Button Fragment</string>
+    <string name="fragmentPreviousButtonTag">Previous Button Fragment</string>
+    <string name="fragmentVideoTag">Video Fragment</string>
+    <string name="urlKey">Video Url</string>
+</resources>

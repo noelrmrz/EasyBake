@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application colors -->
+    <color name="colorPrimary">#FEDBD0</color>
+    <color name="colorPrimaryDark">#FBB8AC</color>
+    <color name="colorText">#442C2E</color>
+    <!-- Create a new color, colorPrimaryLight that is #D1C4E9 -->
+    <color name="colorAccent">#FEEAE6</color>
+</resources>
