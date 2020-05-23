@@ -24,11 +24,6 @@ public class TertiaryActivity extends FragmentActivity
     private Step mCurrentStep;
     private Recipe mRecipe;
 
-    private FragmentButton nextButton;
-    private FragmentButton previousButton;
-    private FragmentInstructions fragmentInstructions;
-    private FragmentVideo fragmentVideo;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,34 +37,26 @@ public class TertiaryActivity extends FragmentActivity
             if (intentThatStartedThisActivity.hasExtra(Intent.EXTRA_TEXT)) {
                 String json = intentThatStartedThisActivity.getStringExtra(Intent.EXTRA_TEXT);
                 mPosition = intentThatStartedThisActivity.getIntExtra(Intent.EXTRA_INDEX, 0);
-                mRecipe = GsonClient.getGsonClient().fromJson(json, Recipe.class);
-                mCurrentStep = mRecipe.getmSteps().get(mPosition);
+                setRecipe(json);
             }
         }
 
-        // Retrieve Fragment instances if they already exist
-        // else create new instances
         if (savedInstanceState != null) {
-
+            String json = savedInstanceState.getString("json");
             mPosition = savedInstanceState.getInt(Intent.EXTRA_INDEX, 0);
-            nextButton = (FragmentButton) getSupportFragmentManager().findFragmentByTag(FRAGMENT_NBUTTON_TAG);
-            previousButton = (FragmentButton) getSupportFragmentManager().findFragmentByTag(FRAGMENT_PBUTTON_TAG);
-            fragmentInstructions = (FragmentInstructions) getSupportFragmentManager().findFragmentByTag(FRAGMENT_INSTRUCTION_TAG);
-            fragmentVideo = (FragmentVideo) getSupportFragmentManager().findFragmentByTag(FRAGMENT_VIDEO_TAG);
+            setRecipe(json);
         }
-        else {
             // Create a new media fragment
-            fragmentVideo = FragmentVideo.newInstance(mCurrentStep.getmVideoUrl());
+            FragmentVideo fragmentVideo = FragmentVideo.newInstance(mCurrentStep.getmVideoUrl());
 
             // Create a new instructions fragment
-            fragmentInstructions = FragmentInstructions.newInstance(mCurrentStep.getmDescription());
+            FragmentInstructions fragmentInstructions = FragmentInstructions.newInstance(mCurrentStep.getmDescription());
 
             // Create a new next button fragment
-            nextButton = FragmentButton.newInstance(this, getString(R.string.next));
+            FragmentButton nextButton = FragmentButton.newInstance(this, getString(R.string.next));
 
             // Create a new previous button fragment
-            previousButton = FragmentButton.newInstance(this, getString(R.string.previous));
-        }
+            FragmentButton previousButton = FragmentButton.newInstance(this, getString(R.string.previous));
 
         getSupportFragmentManager()
                 .beginTransaction()
@@ -87,6 +74,9 @@ public class TertiaryActivity extends FragmentActivity
     @Override
     public void onClick(String direction) {
 
+        FragmentVideo fragmentVideo = (FragmentVideo) getSupportFragmentManager().findFragmentByTag(FRAGMENT_VIDEO_TAG);
+        FragmentInstructions fragmentInstructions = (FragmentInstructions) getSupportFragmentManager().findFragmentByTag(FRAGMENT_INSTRUCTION_TAG);
+
         if (direction.equalsIgnoreCase(getString(R.string.next)) && mRecipe.getmSteps().get(mPosition).getmId()
                 < mRecipe.getmSteps().size() - getResources().getInteger(R.integer.one)) {
             mPosition++;
@@ -101,17 +91,19 @@ public class TertiaryActivity extends FragmentActivity
             fragmentVideo.setUrl(mRecipe.getmSteps().get(mPosition).getmVideoUrl());
             fragmentVideo.initializePlayer();
         }
-        updateCurrentStep();
+
+        mCurrentStep = mRecipe.getmSteps().get(mPosition);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outstate) {
         super.onSaveInstanceState(outstate);
         outstate.putInt(Intent.EXTRA_INDEX, mPosition);
+        outstate.putString("json", GsonClient.getGsonClient().toJson(mRecipe, Recipe.class));
     }
 
-    private void updateCurrentStep() {
+    private void setRecipe(String jsonRecipe) {
+        mRecipe = GsonClient.getGsonClient().fromJson(jsonRecipe, Recipe.class);
         mCurrentStep = mRecipe.getmSteps().get(mPosition);
     }
-
 }

@@ -1,10 +1,12 @@
 package com.noelrmrz.easybake.fragments;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +21,6 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -39,6 +40,8 @@ public class FragmentVideo extends Fragment {
     private boolean playWhenReady = true;
     private int currentWindow;
     private long playbackPosition;
+    private int orientation = Configuration.ORIENTATION_PORTRAIT;
+    private Activity mActivity;
 
     public FragmentVideo() {
     }
@@ -54,12 +57,12 @@ public class FragmentVideo extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mActivity = getActivity();
 
         if (savedInstanceState != null) {
             mURL = savedInstanceState.getString(Intent.EXTRA_TEXT);
@@ -70,6 +73,9 @@ public class FragmentVideo extends Fragment {
         else {
             mURL = getArguments().getString(Intent.EXTRA_TEXT);
         }
+
+        orientation = mActivity.getResources().getConfiguration().orientation;
+
     }
 
     @Override
@@ -78,6 +84,20 @@ public class FragmentVideo extends Fragment {
 
         // Initialize the player view
         mPlayerView = view.findViewById(R.id.player_view);
+        ViewGroup.LayoutParams params = mPlayerView.getLayoutParams();
+
+        switch (orientation) {
+            case Configuration.ORIENTATION_PORTRAIT:
+                mPlayerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                mPlayerView.setLayoutParams(params);
+                break;
+            case Configuration.ORIENTATION_LANDSCAPE:
+                params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                mPlayerView.setLayoutParams(params);
+                hideSystemUI();
+                break;
+        }
+
         // initialize the player
         initializePlayer();
     }
@@ -90,10 +110,11 @@ public class FragmentVideo extends Fragment {
 
     public void initializePlayer() {
         if (mExoPlayer == null) {
+
             // Create and instance of the ExoPlayer
             TrackSelector trackSelector = new DefaultTrackSelector();
             LoadControl loadControl = new DefaultLoadControl();
-            mExoPlayer = ExoPlayerFactory.newSimpleInstance(getActivity(), trackSelector, loadControl);
+            mExoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
             mPlayerView.setPlayer(mExoPlayer);
             // Prepare the media source
             mExoPlayer.prepare(buildMediaSource(getUri()));
@@ -198,23 +219,4 @@ public class FragmentVideo extends Fragment {
         outstate.putInt(CURRENT_WINDOW, currentWindow);
         outstate.putLong(PLAYBACK_POSITION, playbackPosition);
     }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        // Check the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            // TODO change to fullscreen
-            mPlayerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
-            hideSystemUI();
-
-        }
-        else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            // TODO change to portrait
-            mPlayerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
-            mPlayerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-        }
-    }
-
 }

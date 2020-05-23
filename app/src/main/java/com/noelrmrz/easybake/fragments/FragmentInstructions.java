@@ -1,6 +1,7 @@
 package com.noelrmrz.easybake.fragments;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,8 @@ public class FragmentInstructions extends Fragment{
 
     private TextView mTextView;
     private String mInstructions;
+    private int orientation = Configuration.ORIENTATION_PORTRAIT;
+
 
     public FragmentInstructions() {
 
@@ -32,7 +35,6 @@ public class FragmentInstructions extends Fragment{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
 
         // Retrieve arguments from savedInstanceState or arguments
         if (savedInstanceState != null) {
@@ -40,6 +42,9 @@ public class FragmentInstructions extends Fragment{
         } else {
             mInstructions = getArguments().getString(Intent.EXTRA_TEXT);
         }
+
+        orientation = getActivity().getResources().getConfiguration().orientation;
+
     }
 
     @Override
@@ -48,6 +53,15 @@ public class FragmentInstructions extends Fragment{
 
         mTextView = view.findViewById(R.id.tv_step_long_description);
         mTextView.setText(mInstructions);
+
+        switch (orientation) {
+            case Configuration.ORIENTATION_PORTRAIT:
+                mTextView.setVisibility(View.VISIBLE);
+                break;
+            case Configuration.ORIENTATION_LANDSCAPE:
+                mTextView.setVisibility(View.INVISIBLE);
+                break;
+        }
     }
 
     @Override

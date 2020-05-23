@@ -1,6 +1,7 @@
 package com.noelrmrz.easybake.fragments;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,7 @@ public class FragmentButton extends Fragment implements View.OnClickListener {
     private TextView mButtonTextView;
     private String mDirection;
     private static ViewOnClickHandler mClickHandler;
+    private int orientation = Configuration.ORIENTATION_PORTRAIT;
 
     public FragmentButton() {
 
@@ -39,6 +41,7 @@ public class FragmentButton extends Fragment implements View.OnClickListener {
         super.onCreate(savedInstanceState);
 
         mDirection = getArguments().getString(Intent.EXTRA_TEXT);
+        orientation = getActivity().getResources().getConfiguration().orientation;
     }
 
 
@@ -53,6 +56,15 @@ public class FragmentButton extends Fragment implements View.OnClickListener {
 
         mButtonTextView = view.findViewById(R.id.tv_button);
         mButtonTextView.setText(mDirection);
+
+        switch (orientation) {
+            case Configuration.ORIENTATION_PORTRAIT:
+                mButtonTextView.setVisibility(View.VISIBLE);
+                break;
+            case Configuration.ORIENTATION_LANDSCAPE:
+                mButtonTextView.setVisibility(View.INVISIBLE);
+                break;
+        }
     }
 
     /*
