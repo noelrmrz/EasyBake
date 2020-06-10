@@ -41,7 +41,11 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepAdapterVie
     public void onBindViewHolder(@NonNull StepAdapter.StepAdapterViewHolder viewHolder,
                                  int position) {
         viewHolder.stepDescription.setText(mSteps[position].getmShortDescription());
-        viewHolder.stepNumber.setText(String.valueOf(position + 1));
+
+        // Accounting for zero indexed instruction steps
+        if (position != 0) {
+            viewHolder.stepNumber.setText(String.valueOf(position));
+        }
     }
 
     @Override

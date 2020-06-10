@@ -42,15 +42,17 @@ public class TertiaryActivity extends FragmentActivity
         }
 
         if (savedInstanceState != null) {
-            String json = savedInstanceState.getString("json");
+            String json = savedInstanceState.getString(getString(R.string.jsonRecipe));
             mPosition = savedInstanceState.getInt(Intent.EXTRA_INDEX, 0);
             setRecipe(json);
         }
             // Create a new media fragment
-            FragmentVideo fragmentVideo = FragmentVideo.newInstance(mCurrentStep.getmVideoUrl());
+            FragmentVideo fragmentVideo = FragmentVideo.newInstance(mCurrentStep.getmVideoUrl(),
+                    mCurrentStep.getmThumbnailUrl());
 
             // Create a new instructions fragment
-            FragmentInstructions fragmentInstructions = FragmentInstructions.newInstance(mCurrentStep.getmDescription());
+            FragmentInstructions fragmentInstructions = FragmentInstructions
+                    .newInstance(mCurrentStep.getmDescription());
 
             // Create a new next button fragment
             FragmentButton nextButton = FragmentButton.newInstance(this, getString(R.string.next));
@@ -61,8 +63,10 @@ public class TertiaryActivity extends FragmentActivity
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container_next_button, nextButton, FRAGMENT_NBUTTON_TAG)
-                .replace(R.id.fragment_container_previous_button, previousButton, FRAGMENT_PBUTTON_TAG)
-                .replace(R.id.fragment_container_instructions, fragmentInstructions, FRAGMENT_INSTRUCTION_TAG)
+                .replace(R.id.fragment_container_previous_button, previousButton,
+                        FRAGMENT_PBUTTON_TAG)
+                .replace(R.id.fragment_container_instructions, fragmentInstructions,
+                        FRAGMENT_INSTRUCTION_TAG)
                 .replace(R.id.fragment_container_media, fragmentVideo, FRAGMENT_VIDEO_TAG)
                 .commit();
     }
@@ -74,8 +78,10 @@ public class TertiaryActivity extends FragmentActivity
     @Override
     public void onClick(String direction) {
 
-        FragmentVideo fragmentVideo = (FragmentVideo) getSupportFragmentManager().findFragmentByTag(FRAGMENT_VIDEO_TAG);
-        FragmentInstructions fragmentInstructions = (FragmentInstructions) getSupportFragmentManager().findFragmentByTag(FRAGMENT_INSTRUCTION_TAG);
+        FragmentVideo fragmentVideo = (FragmentVideo) getSupportFragmentManager()
+                .findFragmentByTag(FRAGMENT_VIDEO_TAG);
+        FragmentInstructions fragmentInstructions = (FragmentInstructions)
+                getSupportFragmentManager().findFragmentByTag(FRAGMENT_INSTRUCTION_TAG);
 
         if (direction.equalsIgnoreCase(getString(R.string.next)) && mRecipe.getmSteps().get(mPosition).getmId()
                 < mRecipe.getmSteps().size() - getResources().getInteger(R.integer.one)) {
@@ -99,7 +105,8 @@ public class TertiaryActivity extends FragmentActivity
     protected void onSaveInstanceState(Bundle outstate) {
         super.onSaveInstanceState(outstate);
         outstate.putInt(Intent.EXTRA_INDEX, mPosition);
-        outstate.putString("json", GsonClient.getGsonClient().toJson(mRecipe, Recipe.class));
+        outstate.putString(getString(R.string.jsonRecipe),
+                GsonClient.getGsonClient().toJson(mRecipe, Recipe.class));
     }
 
     private void setRecipe(String jsonRecipe) {

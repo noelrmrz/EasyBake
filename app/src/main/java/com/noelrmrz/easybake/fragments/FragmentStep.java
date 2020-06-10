@@ -4,9 +4,11 @@ package com.noelrmrz.easybake.fragments;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,14 +17,13 @@ import com.noelrmrz.easybake.POJO.Recipe;
 import com.noelrmrz.easybake.POJO.Step;
 import com.noelrmrz.easybake.R;
 import com.noelrmrz.easybake.StepAdapter;
-import com.noelrmrz.easybake.TertiaryActivity;
 import com.noelrmrz.easybake.utilities.GsonClient;
 
 import java.util.ArrayList;
 
-public class FragmentStep extends Fragment implements StepAdapter.StepAdapterOnClickHandler {
+public class FragmentStep extends Fragment {
 
-    private static Recipe mRecipe;
+    private Recipe mRecipe;
 
     private RecyclerView mRecyclerView;
     private StepAdapter mStepAdapter;
@@ -36,7 +37,6 @@ public class FragmentStep extends Fragment implements StepAdapter.StepAdapterOnC
      */
     public static FragmentStep newInstance(String jsonRecipe) {
         Bundle args = new Bundle();
-        mRecipe = GsonClient.getGsonClient().fromJson(jsonRecipe, Recipe.class);
         FragmentStep fragmentStep = new FragmentStep();
         args.putString(Intent.EXTRA_TEXT, jsonRecipe);
         fragmentStep.setArguments(args);
@@ -47,11 +47,8 @@ public class FragmentStep extends Fragment implements StepAdapter.StepAdapterOnC
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (savedInstanceState != null) {
-            mRecipe = GsonClient.getGsonClient().fromJson(getArguments().getString(Intent.EXTRA_TEXT), Recipe.class);
-        }
-
-        mStepAdapter = new StepAdapter(this);
+        mRecipe = GsonClient.getGsonClient().fromJson(getArguments().getString(Intent.EXTRA_TEXT), Recipe.class);
+        mStepAdapter = new StepAdapter((StepAdapter.StepAdapterOnClickHandler) getActivity());
         mStepAdapter.setStepList(convertToArray(mRecipe.getmSteps()));
     }
 
@@ -60,6 +57,7 @@ public class FragmentStep extends Fragment implements StepAdapter.StepAdapterOnC
         super.onViewCreated(view, savedInstanceState);
 
         mRecyclerView = view.findViewById(R.id.rv_steps);
+
         mRecyclerView.setAdapter(mStepAdapter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
@@ -73,21 +71,16 @@ public class FragmentStep extends Fragment implements StepAdapter.StepAdapterOnC
         return view;
     }
 
-    @Override
-    public void onClick(Step step) {
-        // Start the new activity for the selected step
-        Intent intent = new Intent(getActivity(), TertiaryActivity.class);
-        intent.putExtra(Intent.EXTRA_TEXT, GsonClient.getGsonClient().toJson(mRecipe,
-                mRecipe.getClass()));
-        intent.putExtra(Intent.EXTRA_INDEX, step.getmId());
-        startActivity(intent);
-    }
-
     public Step[] convertToArray(ArrayList<Step> arrayList) {
         Step[] newlist = new Step[arrayList.size()];
         for (int x = 0; x < arrayList.size(); x++) {
             newlist[x] = arrayList.get(x);
         }
         return newlist;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        return super.onOptionsItemSelected(item);
     }
 }

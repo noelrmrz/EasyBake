@@ -5,12 +5,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -26,16 +28,20 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.noelrmrz.easybake.R;
+import com.noelrmrz.easybake.utilities.PicassoClient;
 
 public class FragmentVideo extends Fragment {
 
-    private String mURL;
+    private String mVideoUrl;
+    private String mThumbnailUrl;
     private SimpleExoPlayer mExoPlayer;
     private PlayerView mPlayerView;
+    private ImageView mImageView;
 
     private final String PLAY_WHEN_READY = "playWhenReady";
     private final String CURRENT_WINDOW = "currentWindow";
     private final String PLAYBACK_POSITION = "playbackPosition";
+    private final static String THUMBNAIL_URL = "thumbnailUrl";
 
     private boolean playWhenReady = true;
     private int currentWindow;
@@ -46,10 +52,11 @@ public class FragmentVideo extends Fragment {
     public FragmentVideo() {
     }
 
-    public static FragmentVideo newInstance(String url) {
+    public static FragmentVideo newInstance(String videoUrl, String thumbnailUrl) {
         Bundle args = new Bundle();
         FragmentVideo fragmentVideo = new FragmentVideo();
-        args.putString(Intent.EXTRA_TEXT, url);
+        args.putString(Intent.EXTRA_TEXT, videoUrl);
+        args.putString(THUMBNAIL_URL, thumbnailUrl);
         fragmentVideo.setArguments(args);
         return fragmentVideo;
     }
@@ -65,25 +72,46 @@ public class FragmentVideo extends Fragment {
         mActivity = getActivity();
 
         if (savedInstanceState != null) {
-            mURL = savedInstanceState.getString(Intent.EXTRA_TEXT);
+            mThumbnailUrl = savedInstanceState.getString(THUMBNAIL_URL);
+            mVideoUrl = savedInstanceState.getString(Intent.EXTRA_TEXT);
             playWhenReady = savedInstanceState.getBoolean(PLAY_WHEN_READY);
             currentWindow = savedInstanceState.getInt(CURRENT_WINDOW);
             playbackPosition = savedInstanceState.getLong(PLAYBACK_POSITION);
         }
         else {
-            mURL = getArguments().getString(Intent.EXTRA_TEXT);
+            mVideoUrl = getArguments().getString(Intent.EXTRA_TEXT);
+            mThumbnailUrl = getArguments().getString(THUMBNAIL_URL);
         }
 
         orientation = mActivity.getResources().getConfiguration().orientation;
-
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize the player view
         mPlayerView = view.findViewById(R.id.player_view);
+        mImageView = view.findViewById(R.id.iv_default_player_image);
+
+        // Check if the video url is empty, if it is make its view gone and show the thumbnail
+        if (!(mVideoUrl.isEmpty())) {
+            mImageView.setVisibility(View.GONE);
+            mPlayerView.setVisibility(View.VISIBLE);
+        }
+        else {
+            // Check if the thumnail url is empty, if it is show a default image
+            if (!(mThumbnailUrl.isEmpty())) {
+                PicassoClient.downloadImage(mThumbnailUrl, mImageView);
+            }
+            else {
+                mImageView.setImageResource(R.drawable.ic_icon);
+            }
+            mImageView.setVisibility(View.VISIBLE);
+            mPlayerView.setVisibility(View.GONE);
+        }
+
         ViewGroup.LayoutParams params = mPlayerView.getLayoutParams();
 
         switch (orientation) {
@@ -123,9 +151,10 @@ public class FragmentVideo extends Fragment {
         else {
             //loading new uri
             mExoPlayer.prepare(buildMediaSource(getUri()), false, false);
+            //reset the playback position
+            mExoPlayer.seekTo(0);
         }
     }
-
 
     private MediaSource buildMediaSource(Uri uri) {
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(getContext(), getString(R.string.app_name));
@@ -202,11 +231,11 @@ public class FragmentVideo extends Fragment {
     }
 
     private Uri getUri() {
-        return Uri.parse(mURL);
+        return Uri.parse(mVideoUrl);
     }
 
     public void setUrl(String url) {
-        mURL = url;
+        mVideoUrl = url;
     }
 
     @Override
@@ -214,7 +243,8 @@ public class FragmentVideo extends Fragment {
     {
         super.onSaveInstanceState(outstate);
         updateStartPosition();
-        outstate.putString(Intent.EXTRA_TEXT, mURL);
+        outstate.putString(THUMBNAIL_URL, mThumbnailUrl);
+        outstate.putString(Intent.EXTRA_TEXT, mVideoUrl);
         outstate.putBoolean(PLAY_WHEN_READY, playWhenReady);
         outstate.putInt(CURRENT_WINDOW, currentWindow);
         outstate.putLong(PLAYBACK_POSITION, playbackPosition);

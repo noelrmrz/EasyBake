@@ -1,6 +1,8 @@
 package com.noelrmrz.easybake;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +13,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.noelrmrz.easybake.POJO.Recipe;
+import com.noelrmrz.easybake.utilities.GsonClient;
+import com.noelrmrz.easybake.utilities.PicassoClient;
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdapterViewHolder> {
 
     private Recipe[] mRecipes;
     private final RecipeAdapterOnClickHandler mClickHandler;
     private Context mContext;
+    private final String mSharedPrefFile = "com.noelrmrz.easybake";
 
     public RecipeAdapter(RecipeAdapterOnClickHandler clickHandler) {
         mClickHandler = clickHandler;
@@ -40,14 +45,22 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdap
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecipeAdapter.RecipeAdapterViewHolder viewHolder,
+    public void onBindViewHolder(@NonNull RecipeAdapterViewHolder viewHolder,
                                  int position) {
         viewHolder.recipeName.setText(mRecipes[position].getmName());
         viewHolder.recipeServings.setText(mContext.getString(R.string.servings)
                 .concat(String.valueOf(mRecipes[position].getmServings())));
         viewHolder.recipeIngredientCount.setText(mContext.getString(R.string.ingredients)
                 .concat(String.valueOf(mRecipes[position].getmIngredients().size())));
-        // TODO background image if they exist if not use a default image
+
+        if (!(mRecipes[position].getmImageUrl().isEmpty())) {
+            PicassoClient.downloadImage(mRecipes[position].getmImageUrl(), viewHolder.recipeImage);
+        }
+        else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                viewHolder.recipeImage.setImageDrawable(mContext.getDrawable(R.drawable.ic_icon));
+            }
+        }
     }
 
     @Override
@@ -87,6 +100,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdap
         public void onClick(View view) {
             int adapterPosition = getAdapterPosition();
             Recipe recipe = mRecipes[adapterPosition];
+            updateWidgetService(recipe);
             mClickHandler.onClick(recipe);
         }
     }
@@ -98,4 +112,13 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeAdap
         mRecipes = recipes;
         notifyDataSetChanged();
     }
+
+    public void updateWidgetService(Recipe recipe) {
+
+        SharedPreferences.Editor editor = mContext.getSharedPreferences(mSharedPrefFile, Context.MODE_PRIVATE).edit();
+        editor.putString("jsonRecipe", GsonClient.getGsonClient().toJson(recipe));
+        editor.apply();
+        EasyBakeWidgetService.startActionOpenRecipe(mContext);
+    }
+
 }

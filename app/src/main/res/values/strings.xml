@@ -10,4 +10,7 @@
     <string name="fragmentPreviousButtonTag">Previous Button Fragment</string>
     <string name="fragmentVideoTag">Video Fragment</string>
     <string name="urlKey">Video Url</string>
+    <string name="add_widget">Add widget</string>
+    <string name="picassoErrorMessage">Could not download the image</string>
+    <string name="jsonRecipe">JSON_RECIPE</string>
 </resources>
